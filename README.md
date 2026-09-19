@@ -1,5 +1,11 @@
 # Baseline Predictive Pipeline -- ETAI
-20221997 / Suelen Faruk
+20221997 - Suelen Karina Faruk
+
+**Conclusion of the results:**
+I concluded that Logistic regression performed better than decision three model because the gap between train and test is lower than the gap of the decision three that I performed which means that the probability of Logistic Regression overfitts is very small comparing with the decision three.
+
+Gap (train - test): -0.001 - **Logistic Regression**
+Gap (train - test): +0.203 - **Decision three**
 This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
 
 The task: predict two-year recidivism using ProPublica's COMPAS
