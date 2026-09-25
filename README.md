@@ -1,5 +1,5 @@
 # Baseline Predictive Pipeline -- ETAI
-20221997 / Suelen Faruk
+Suelen Karina Faruk - 20221997
 This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
 
 The task: predict two-year recidivism using ProPublica's COMPAS
