@@ -1,23 +1,59 @@
 # Baseline Predictive Pipeline -- ETAI - Exploratory Topics of Artificial Intelligence.
-20221997 - Suelen Karina Faruk 
+### 20221997 - Suelen Karina Faruk 
 
-# Week 1 - Conclusions
+## Week 1 - Conclusions:
+#### Logistic Regression before cleaning the data:
+Logistic Regression:
+Train accuracy: 0.679
+Test accuracy:  0.680
+Gap (train - test): -0.001
+
+#### Conclusions:
+This model performs well on training but also performs well on testing with these results we can say that the model is less likely to overfit as the gap between train and test is very low.
+
+#### Decision Three after cleaning the data:
+Decision Three: 
+Train accuracy: 0.829
+Test accuracy:  0.626
+Gap (train - test): +0.203
+
+
+#### Conclusions:
+This model performs well on the training data, although the gap between the training and test accuracy gives us evidence of possible overfitting. The test accuracy shows that the model is also able to make predictions on unseen data, although its performance is lower than on the training data.
+
+#### Best Model:
+Based on test accuracy and the train-test gap, Logistic Regression performs better than the Decision Tree in these experiments. It achieves higher test accuracy and has a much smaller gap between training and test performance, giving us less evidence of overfitting. Besides the smaller gap(train-test), the model has similar scores in train and test which gives us further evidence that the model will be less likely to overfit.
+
+
+## Week 2 - Conclusions:
+#### Logistic Regression after cleaning the data: 
+Logistic Regression:
+Train accuracy: 0.678
+Test accuracy:  0.655
+Gap (train - test): +0.023 
+
+#### Conclusions:
+The gap increased enough to say Although the model has an overall test accuracy of 65.5%, it's recall for people who actually reoffended is only 51%. Therefore, the overall accuracy does not mean that the model identifies reoffenders particularly well.
+The model has similar performance on the training and test data.The small train-test gap is another metric that gives us less evidence of overfitting, as the model's performance does not decrease substantially when applied to unseen data.
+
+
+#### Decision Three after cleaning the data:
+Decision Three: 
+Train accuracy: 0.691
+Test accuracy:  0.642
+Gap (train - test): +0.049
+
+#### Conclusions:
+The training accuracy decreased, but the test accuracy increased. This suggests that the model was fitting the training data less closely and was able to generalize better to unseen data, but if we had just the train-test gap result I would say that here this model is less likely to overfit.
+
+#### Best model:
+The Logistic Regression that I run before cleaning it has the strongest results among all the models tested.
+
+Compared with Logistic Regression after cleaning, the model has a higher test accuracy (68.0% vs. 65.5%) and a smaller train-test gap (-0.001 vs. +0.023). Compared with the Decision Tree after cleaning, it also has a higher test accuracy (68.0% vs. 64.2%) and a smaller train-test gap (-0.001 vs. +0.049). These results give us less evidence of overfitting and indicate that the model generalizes more consistently to unseen data.
 
 
 
-
-# Week 2 - Conclusions
-
-
-
-
-
-
-
-
-
-
-
+## Brief Summary of the Semester
 This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
 
 The task: predict two-year recidivism using ProPublica's COMPAS
