@@ -4,28 +4,27 @@ Entry point for the baseline predictive pipeline.
 Run with:
     python main.py
 
-This orchestrates the full (deliberately simple) pipeline:
-    load config -> load data -> preprocess -> split -> train
-    -> evaluate (train & test) -> save results
+This orchestrates the full pipeline:
+    load config -> load data -> diagnose/clean (week 3) -> drop duplicate rows (training only, week 4)
+    -> split features/target
+    -> set the final test set aside, locked (week 4)
+    -> stratified k-fold cross-validation of preprocessing + model on the development set (week 4)
+    -> out-of-fold classification report + fairness check
+    -> refit the final model on the whole development set -> save results
 """
 import yaml
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
 
 from src.data import load_data
-from src.preprocessing import preprocess, clean_dataset
+from src.preprocessing import (
+    clean_dataset, drop_duplicate_rows, split_features_target, build_preprocessor, split_dev_test,
+)
 from src.model import build_model
-from src.evaluate import evaluate, fairness_report
+from src.evaluate import (
+    cross_validate_pipeline, cv_report, oof_classification_report, fairness_report,
+)
 from src.results import save_run
-
-import warnings
-warnings.filterwarnings("ignore")
-
-import json
-import numpy as np
-import pandas as pd
-from scipy.stats import chi2_contingency
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 def load_config(path: str = "config.yaml") -> dict:
@@ -36,30 +35,62 @@ def load_config(path: str = "config.yaml") -> dict:
 def main():
     config = load_config()
 
-    df = load_data(config["data"]["path"])
-    df = clean_dataset(df, config["diagnostics"])
- 
+    # load + diagnose-and-clean (week 3): nothing here is learned from the data, so it's
+    # safe to run on the whole dataset -- see src/preprocessing.py
+    df_raw = load_data(config["data"]["path"])
+    df_clean = clean_dataset(df_raw, config["diagnostics"])          # row-preserving: also safe for new data
+    # training data only: the same person must not count twice, or sit in both dev and test
+    df_clean = drop_duplicate_rows(df_clean, config["diagnostics"].get("id_column"))
 
-    X_train, X_test, y_train, y_test, extras_test = preprocess(
-        df,
-        target=config["data"]["target"],
-        sensitive_attr=config["data"]["sensitive_attr"],
-        drop_columns=config["data"]["drop_columns"],
-        test_size=config["split"]["test_size"],
-        random_state=config["split"]["random_state"],
+    mnar_sources = config["preprocessing"].get("mnar_indicator_sources", [])
+    X, y, extras = split_features_target(df_clean, config["data"], mnar_sources)
+
+    # week 4: the final test set is set aside HERE and never used again in this script.
+    # Every decision from now on (preprocessing, model, hyperparameters) is made on the
+    # development set only. The test set is used only for the final assessment.
+    X_dev, X_test, y_dev, y_test, extras_dev, extras_test = split_dev_test(
+        X, y, extras,
+        test_size=config["test_set"]["size"],
+        random_state=config["test_set"]["random_state"],
     )
 
-    model = build_model(config["model"])
-    model.fit(X_train, y_train)
+    # preprocessing lives INSIDE the pipeline, so cross-validation re-fits it on the
+    # training part of every fold -- the validation fold never leaks into its own preprocessing
+    pipeline = Pipeline([
+        ("prep", build_preprocessor(config["preprocessing"])),
+        ("model", build_model(config["model"])),
+    ])
 
-    # predict on both splits -- train accuracy vs. test accuracy is how we'll spot overfitting, not just how "good" the model looks
-    y_train_pred = model.predict(X_train)
-    y_test_pred = model.predict(X_test)
+    # a fixed random_state = the same folds on every run and for every model, so comparing
+    # two models' fold scores is a like-for-like (paired) comparison
+    cv_config = config["cv"]
+    shuffle = cv_config.get("shuffle", True)
+    cv = StratifiedKFold(n_splits=cv_config["n_splits"], shuffle=shuffle,
+                         random_state=cv_config.get("random_state") if shuffle else None)
+    scoring = cv_config.get("scoring", "accuracy")
 
-    report = evaluate(y_train, y_train_pred, y_test, y_test_pred)
+    # fold scores + out-of-fold predictions (each row predicted by the fold model that did NOT train on it)
+    fold_scores, y_oof = cross_validate_pipeline(
+        pipeline, X_dev, y_dev, cv, scoring, n_jobs=cv_config.get("n_jobs", 1)
+    )
+
+    report = cv_report(fold_scores, scoring)
+    report += "\n\n" + oof_classification_report(y_dev, y_oof)
     report += "\n" + fairness_report(
-        y_test, y_test_pred, extras_test, sensitive_attr=config["data"]["sensitive_attr"]
+        y_dev, y_oof, extras_dev, sensitive_attr=config["data"]["sensitive_attr"]
     )
+
+    # the model we'd actually use: same pipeline, refit on EVERY development row. CV above
+    # estimated how well this recipe does; it didn't produce a model.
+    final_model = pipeline.fit(X_dev, y_dev)
+    refit = f"Final model: {config['model']['type']} refit on all {len(X_dev)} development rows."
+    print(refit)
+    report += "\n" + refit + "\n"
+
+    locked = (f"Locked test set: {len(X_test)} rows set aside, not evaluated. "
+              f"Development set: {len(X_dev)} rows.")
+    print(locked)
+    report += "\n" + locked + "\n"
 
     results_dir = config.get("output", {}).get("results_dir", "results")
     path = save_run(results_dir, config, report)
@@ -68,65 +99,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-def _canonicalize_categories(df: pd.DataFrame, columns_and_maps: dict, placeholder_tokens: set) -> pd.DataFrame:
-    out = df.copy()
-    for col, mapping in columns_and_maps.items():
-        if col not in out.columns:
-            continue
-        cleaned = out[col].astype(str).str.strip()
-        lowered = cleaned.str.lower()
-        out[col] = lowered.map(mapping).fillna(cleaned)
-        out.loc[out[col].astype(str).str.strip().isin(placeholder_tokens), col] = np.nan
-    return out
-
-def flag_invalid_values(df: pd.DataFrame, rules: dict) -> pd.DataFrame:
-    """
-    Applies a dict of {column: {"min": ..., "max": ...}} domain rules (either bound is
-    optional) and converts violations to NaN **in place** on `df`. An "impossible but
-    not missing" value (an age of -3, a COMPAS decile score of 15) counts as missing
-    once this runs -- `.isna()` alone would never have caught it.
-
-    Returns a small report: how many violations were found per column.
-    """
-    report_rows = []
-    for column, bounds in rules.items():
-        if column not in df.columns:
-            continue
-        numeric = pd.to_numeric(df[column], errors="coerce")
-        lower_ok = numeric >= bounds["min"] if "min" in bounds else pd.Series(True, index=numeric.index)
-        upper_ok = numeric <= bounds["max"] if "max" in bounds else pd.Series(True, index=numeric.index)
-        violations = numeric.notna() & ~(lower_ok & upper_ok)
-        report_rows.append({"column": column, "rule": bounds, "violations": int(violations.sum())})
-        df.loc[violations, column] = np.nan
-    return pd.DataFrame(report_rows)
-
-def clean_dataset(df: pd.DataFrame, diagnostics_config: dict) -> pd.DataFrame:
-    """
-    Applies this week's diagnosis: category cleanup, domain-rule/placeholder -> NaN
-    conversion, de-duplication, and redundant-column removal. Target-agnostic -- safe
-    to call on label-free inference data, since none of this depends on a target column.
-    """
-    out = df.copy()
-    placeholder_tokens = set(diagnostics_config.get("placeholder_tokens", []))
-
-    # numeric columns that load as text purely because of a placeholder token
-    for col in diagnostics_config.get("numeric_text_columns", []):
-        if col in out.columns:
-            out[col] = pd.to_numeric(out[col].replace(list(placeholder_tokens), np.nan), errors="coerce")
-
-    flag_invalid_values(out, diagnostics_config.get("validity_rules", {}))
-
-    out = _canonicalize_categories(out, diagnostics_config.get("canonical_categories", {}), placeholder_tokens)
-
-    out = out.drop_duplicates()
-    id_column = diagnostics_config.get("id_column")
-    if id_column and id_column in out.columns:
-        out = out.drop_duplicates(subset=id_column, keep="first")
-
-    columns_to_drop = [c for c in diagnostics_config.get("redundant_columns", []) if c in out.columns]
-    out = out.drop(columns=columns_to_drop)
-
-    return out
-
 
