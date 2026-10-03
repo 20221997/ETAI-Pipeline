@@ -53,7 +53,7 @@ Compared with Logistic Regression after cleaning, the model has a higher test ac
 
 ## Week 3 - Conclusions:
 
-### Logistic Regression after cross-validation:
+### Model Results after cross-validation:
 
 ### Logistic Regression:
 
