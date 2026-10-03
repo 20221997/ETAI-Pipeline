@@ -69,8 +69,6 @@ However, the classification report shows that the recall for people who actually
 
 Random Forest:
 
-Random Forest:
-
 Train accuracy: 0.733
 Validation accuracy: 0.650
 Gap (train - validation): +0.083
@@ -81,7 +79,6 @@ The Random Forest has a higher training accuracy than Logistic Regression (73.3%
 
 However, the Random Forest has a higher recall for people who actually reoffended, at 58%, compared with 51% for Logistic Regression. This means that although its overall validation accuracy is lower, it identifies a larger proportion of the actual reoffenders in these cross-validation results.
 
-Decision Tree:
 
 Decision Tree:
 
@@ -94,8 +91,6 @@ Gap (train - validation): +0.089
 The Decision Tree has a training accuracy of 69.4%, but its validation accuracy decreases to 60.5%. The train-validation gap is +0.089, which gives evidence of overfitting.
 
 Its recall for people who actually reoffended is 50%, which is similar to the Logistic Regression model's 51% but with lower overall validation accuracy. The Decision Tree therefore shows a larger difference between training and validation performance than Logistic Regression.
-
-Dummy Model:
 
 Dummy:
 
