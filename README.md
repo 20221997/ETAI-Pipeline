@@ -103,7 +103,10 @@ Gap (train - validation): 0.000
 The Dummy model provides a baseline of 54.9% validation accuracy. It has a gap of approximately zero because it always predicts the majority class.
 
 However, its recall for class 1 is 0%, meaning that it does not identify any of the people who actually reoffended. Therefore, accuracy alone is not sufficient to evaluate the performance of this type of classification problem.
-
+\n
+\n
+\n
+\n
 
 
 
