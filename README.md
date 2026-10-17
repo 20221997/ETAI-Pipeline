@@ -1,7 +1,7 @@
 # Baseline Predictive Pipeline -- ETAI - Exploratory Topics of Artificial Intelligence.
 ### 20221997 - Suelen Karina Faruk 
 
-## Week 1 - Conclusions:
+## Week 2 - Conclusions:
 #### Logistic Regression before cleaning the data:
 Logistic Regression:
 Train accuracy: 0.679
@@ -25,7 +25,7 @@ This model performs well on the training data, although the gap between the trai
 Based on test accuracy and the train-test gap, Logistic Regression performs better than the Decision Tree in these experiments. It achieves higher test accuracy and has a much smaller gap between training and test performance, giving us less evidence of overfitting. Besides the smaller gap(train-test), the model has similar scores in train and test which gives us further evidence that the model will be less likely to overfit.
 
 
-## Week 2 - Conclusions:
+## Week 3 - Conclusions:
 #### Logistic Regression after cleaning the data: 
 Logistic Regression:
 Train accuracy: 0.678
@@ -51,7 +51,7 @@ The Logistic Regression that I run before cleaning it has the strongest results 
 
 Compared with Logistic Regression after cleaning, the model has a higher test accuracy (68.0% vs. 65.5%) and a smaller train-test gap (-0.001 vs. +0.023). Compared with the Decision Tree after cleaning, it also has a higher test accuracy (68.0% vs. 64.2%) and a smaller train-test gap (-0.001 vs. +0.049). These results give us less evidence of overfitting and indicate that the model generalizes more consistently to unseen data.
 
-## Week 3 - Conclusions:
+## Week 4 - Conclusions:
 
 ### Model Results after cross-validation:
 
@@ -103,123 +103,92 @@ Gap (train - validation): 0.000
 The Dummy model provides a baseline of 54.9% validation accuracy. It has a gap of approximately zero because it always predicts the majority class.
 
 However, its recall for class 1 is 0%, meaning that it does not identify any of the people who actually reoffended. Therefore, accuracy alone is not sufficient to evaluate the performance of this type of classification problem.
-\n
-\n
-\n
-\n
+
+## Week 6 - Conclusions:
+
+### Model Results after Cross-Validation:
+
+All models were evaluated using 5-fold stratified cross-validation with accuracy as the evaluation metric. The development set contained 5,771 observations, while 1,443 observations were reserved for the locked test set and were not used for model evaluation or selection.
+
+### Logistic Regression:
+
+Train accuracy: 0.675  
+Validation accuracy: 0.672  
+Gap (train - validation): +0.003  
+Validation standard deviation: 0.013
+
+#### Conclusions:
+
+Logistic Regression achieved a validation accuracy of 67.2%, with a very small train-validation gap of +0.003. This suggests that the model generalizes consistently across the validation folds, with little evidence of overfitting.
+
+However, its recall for class 1 is only 51%, meaning that it correctly identifies approximately half of the people who actually reoffended.
+
+### Decision Tree:
+
+Train accuracy: 0.693  
+Validation accuracy: 0.605  
+Gap (train - validation): +0.088  
+Validation standard deviation: 0.020
+
+#### Conclusions:
+
+The Decision Tree achieved a training accuracy of 69.3%, but its validation accuracy decreased to 60.5%. The train-validation gap of +0.088 suggests overfitting, since the model performs noticeably better on the training folds than on unseen validation observations.
+
+Its recall for class 1 is 50%, which is lower than that of the other ensemble models tested.
+
+### Random Forest:
+
+Train accuracy: 0.733  
+Validation accuracy: 0.650  
+Gap (train - validation): +0.083  
+Validation standard deviation: 0.018
+
+#### Conclusions:
+
+Random Forest achieved a training accuracy of 73.3%, but its validation accuracy was 65.0%. The gap of +0.083 suggests that the model is fitting the training data more closely than it generalizes to unseen observations.
+
+However, its recall for class 1 was 58%, higher than Logistic Regression's 51%. Therefore, although Random Forest has lower overall validation accuracy, it identifies a larger proportion of actual reoffenders.
+
+### Oblique Random Forest:
+
+Train accuracy: 0.761  
+Validation accuracy: 0.647  
+Gap (train - validation): +0.114  
+Validation standard deviation: 0.011
+
+#### Conclusions:
+
+Oblique Random Forest achieved the highest training accuracy among the evaluated models, at 76.1%, but its validation accuracy was only 64.7%.
+
+The train-validation gap of +0.114 is the largest among the models, suggesting stronger overfitting. This indicates that higher training accuracy does not necessarily result in better generalization to unseen data.
+
+Its recall for class 1 was 57%, which is higher than Logistic Regression's recall but slightly lower than Random Forest's.
+
+### AdaBoost:
+
+Train accuracy: 0.682  
+Validation accuracy: 0.676  
+Gap (train - validation): +0.006  
+Validation standard deviation: 0.012
+
+#### Conclusions:
+
+AdaBoost achieved the highest validation accuracy among the evaluated models, at 67.6%. Its training accuracy was 68.2%, resulting in a small train-validation gap of +0.006, which gives little evidence of overfitting.
+
+Its recall for class 1 was 54%, higher than Logistic Regression's 51%, although lower than Random Forest's 58%.
+
+These results suggest that AdaBoost provides a good balance between validation accuracy, generalization, and the ability to identify people who actually reoffended.
+
+### Best Model:
+
+Based on the current cross-validation results, AdaBoost is the leading candidate, with the highest validation accuracy (67.6%) and a small train-validation gap (+0.006).
+
+However, its advantage over Logistic Regression is only 0.4 percentage points, which is smaller than the validation standard deviation of either model. Therefore, we cannot conclude that AdaBoost is clearly superior based on these results alone.
+
+Random Forest achieves the highest recall for class 1 (58%), which is also important because the objective is to identify people who actually reoffended.
+
+For now, I would choose AdaBoost based on validation accuracy and its small generalization gap, while keeping Logistic Regression as a strong alternative. The final decision should also consider nested cross-validation, fairness, and performance on the locked test set after model selection is complete.
 
 
 
 
-## Brief Summary of the Semester
-This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
-
-The task: predict two-year recidivism using ProPublica's COMPAS
-dataset -- the data behind a real 2016 investigation into a risk-
-assessment algorithm actually used by US courts to help inform bail and sentencing decisions. See `data/README.md` for the full problem description and a complete data dictionary before you start.
-
-It has some **deliberately weak spots**. Part of your work this
-semester is finding them and making them better -- see the pipeline progress table below, which tracks what changes and why as the weeks
-go on.
-
-## Project structure
-
-```
-.
-├── main.py                # entry point: run the whole pipeline
-├── config.yaml             # all tunable settings live here
-├── requirements.txt
-├── src/
-│   ├── data.py             # loading
-│   ├── preprocessing.py    # cleaning + train/test split
-│   ├── model.py             # model construction
-│   ├── evaluate.py         # accuracy metrics + fairness check
-│   └── results.py          # saves each run's report to disk
-├── results/                # created automatically -- one file per run (not tracked in git)
-└── data/
-    ├── compas_two_year_recidivism.csv
-    └── README.md            # problem description + full data dictionary
-```
-
-## Pipeline progress
-
-This table is updated after each practical class, so you can always see what changed in the pipeline and why -- it's a running log, not a fixed syllabus.
-
-| Week | Practical class focus | Added to the pipeline |
-|------|------------------------|------------------------|
-| 2 | Introduction & baseline pipeline | Initial version: project structure, a single naive train/test split (no cross-validation), minimal preprocessing (drop rows with missing values, one-hot encode categoricals), logistic regression baseline, a first (deliberately simple) fairness check comparing our model's and COMPAS's own false-positive rate by race, train-vs-test accuracy reporting (to start spotting overfitting), and each run's full report saved automatically to `results/` |
-
-## Environment setup
-
-You only need to do this once per machine.
-
-### macOS / Linux
-```bash
-python3 -m venv venv                 # creates an isolated Python environment in a folder called "venv"
-source venv/bin/activate             # activates it -- packages install here, not system-wide, and stay out of your other projects
-pip install -r requirements.txt      # installs the exact packages this project needs, into that environment
-```
-
-### Windows -- PowerShell
-```powershell
-python -m venv venv                  # creates an isolated Python environment in a folder called "venv"
-venv\Scripts\activate                # activates it -- packages install here, not system-wide, and stay out of your other projects
-pip install -r requirements.txt      # installs the exact packages this project needs, into that environment
-```
-If PowerShell blocks the activation script, run this once first:
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-### Windows -- cmd.exe
-Same three steps as above, just with cmd's own activation command:
-```cmd
-python -m venv venv
-venv\Scripts\activate.bat
-pip install -r requirements.txt
-```
-
-Once the environment is active you'll see `(venv)` at the start of your prompt. To leave it later, run `deactivate` (same command on every OS).
-
-### Every time after the first
-
-Creating the environment and installing packages only needs to happen once, ever. Every other time you sit down to work -- a new terminal window, the next practical class, tomorrow -- you don't repeat any of the steps above. From the project's root folder, you just need to:
-
-**macOS / Linux**
-```bash
-source venv/bin/activate
-python main.py
-```
-
-**Windows**
-```powershell
-venv\Scripts\activate
-python main.py
-```
-
-That's it -- activate, then run. If you don't see `(venv)` at the start of your prompt, the environment isn't active and `python main.py` may use the wrong Python (or fail to find a package) entirely.
-
-## Running the pipeline
-
-With the environment active (see above), from the project's root
-folder, on any OS:
-```bash
-python main.py
-```
-
-This loads `config.yaml`, loads and preprocesses the data, trains the model, and prints:
-- **train accuracy and test accuracy, side by side.** Comparing the two is how you catch overfitting: if the model looks much better on the data it was trained on than on data it's never seen, it has memorised rather than learned something that generalises. 
-- a classification report on the test set
-- a false-positive-rate-by-race comparison between our model and
-  COMPAS's own score
-
-All of this is also saved to a timestamped file in `results/` (e.g.`results/run_20260916_143012.txt`), so it doesn't just scroll past in your terminal -- open it later, or change something in `config.yaml` (like the model type) and compare the new file to the last one.
-`results/` is created automatically the first time you run the
-pipeline, and isn't tracked in git (see `.gitignore`) since it's
-generated output, not source.
-
-You're free to improve on this structure or restructure it entirely -- what matters is that your project stays runnable end-to-end with a single command, and that each piece (data, preprocessing, model, evaluation) stays easy to find and change independently.
-
-## Dataset
-
-See `data/README.md`.
