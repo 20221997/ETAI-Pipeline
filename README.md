@@ -195,15 +195,15 @@ Train ROC-AUC: 0.748
 Validation ROC-AUC: 0.721 ± 0.013
 Gap: +0.027
 
-### Conclusions:
+#### Conclusions:
 The model achieved a validation ROC-AUC of 0.721. The small train-validation gap suggests less evidence of overfitting and reasonably consistent performance.
 
-#### KNN Imputer:
+### KNN Imputer:
 Train ROC-AUC: 0.749
 Validation ROC-AUC: 0.717 ± 0.013
 Gap: +0.032
 
-### Conclusions:
+#### Conclusions:
 KNN achieved the lowest validation ROC-AUC among the four methods. The small gap suggests limited evidence of overfitting.
 
 ### Iterative Imputer:
@@ -211,15 +211,15 @@ Train ROC-AUC: 0.753
 Validation ROC-AUC: 0.721 ± 0.014
 Gap: +0.032
 
-### Conclusions:
+#### Conclusions:
 Iterative achieved a similar ROC-AUC to Median, but with a slightly larger train-validation gap, suggesting slightly more evidence of overfitting.
 
-#### Random Forest Imputer:
+### Random Forest Imputer:
 Train ROC-AUC: 0.753
 Validation ROC-AUC: 0.721 ± 0.013
 Gap: +0.032
 
-### Conclusions:
+#### Conclusions:
 Random Forest achieved a similar ROC-AUC to Median and Iterative, with slightly higher recall (0.548) and F1-score (0.603). However, convergence warnings occurred during imputation.
 
 #### Best Imputation Method:
