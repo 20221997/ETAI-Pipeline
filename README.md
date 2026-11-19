@@ -189,6 +189,42 @@ Random Forest achieves the highest recall for class 1 (58%), which is also impor
 
 For now, I would choose AdaBoost based on validation accuracy and its small generalization gap, while keeping Logistic Regression as a strong alternative. The final decision should also consider nested cross-validation, fairness, and performance on the locked test set after model selection is complete.
 
+# Week 10 - Conclusions: 
+### Median Imputer:
+Train ROC-AUC: 0.748
+Validation ROC-AUC: 0.721 ± 0.013
+Gap: +0.027
+
+### Conclusions:
+The model achieved a validation ROC-AUC of 0.721. The small train-validation gap suggests less evidence of overfitting and reasonably consistent performance.
+
+#### KNN Imputer:
+Train ROC-AUC: 0.749
+Validation ROC-AUC: 0.717 ± 0.013
+Gap: +0.032
+
+### Conclusions:
+KNN achieved the lowest validation ROC-AUC among the four methods. The small gap suggests limited evidence of overfitting.
+
+### Iterative Imputer:
+Train ROC-AUC: 0.753
+Validation ROC-AUC: 0.721 ± 0.014
+Gap: +0.032
+
+### Conclusions:
+Iterative achieved a similar ROC-AUC to Median, but with a slightly larger train-validation gap, suggesting slightly more evidence of overfitting.
+
+#### Random Forest Imputer:
+Train ROC-AUC: 0.753
+Validation ROC-AUC: 0.721 ± 0.013
+Gap: +0.032
+
+### Conclusions:
+Random Forest achieved a similar ROC-AUC to Median and Iterative, with slightly higher recall (0.548) and F1-score (0.603). However, convergence warnings occurred during imputation.
+
+#### Best Imputation Method:
+Median is the preferred method because it achieved a competitive validation ROC-AUC (0.721), the smallest train-validation gap (+0.027), and lower computational complexity.Although three methods achieved similar ROC-AUC scores, there is insufficient evidence to conclude that one is statistically superior.
+
 
 
 
